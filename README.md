@@ -430,6 +430,6 @@ Não obrigatórios, mas diferenciam candidatos excepcionais:
 
 ## Dúvidas? ❓
 
-Abra uma issue no seu repositório ou entre em contato com o recrutador.
+Entre em contato com o recrutador.
 
 Boa sorte — e que o multiplicador esteja ao seu favor! 🎲
