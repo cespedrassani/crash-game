@@ -1,7 +1,36 @@
 import { Module } from "@nestjs/common";
+import { PassportModule } from "@nestjs/passport";
 import { WalletsController } from "./presentation/controllers/wallets.controller";
+import { PrismaService } from "./infrastructure/persistence/prisma.service";
+import { WalletRepositoryImpl } from "./infrastructure/persistence/wallet.repository.impl";
+import { WalletTransactionRepositoryImpl } from "./infrastructure/persistence/wallet-transaction.repository.impl";
+import { RabbitMQService } from "./infrastructure/messaging/rabbitmq.service";
+import { WalletReplyPublisher } from "./infrastructure/messaging/wallet-reply.publisher";
+import { GameEventsConsumer } from "./infrastructure/messaging/game-events.consumer";
+import { JwtStrategy } from "./infrastructure/auth/jwt.strategy";
+import { CreateWalletHandler } from "./application/commands/create-wallet/create-wallet.handler";
+import { DebitWalletHandler } from "./application/commands/debit-wallet/debit-wallet.handler";
+import { CreditWalletHandler } from "./application/commands/credit-wallet/credit-wallet.handler";
+import { GetMyWalletHandler } from "./application/queries/get-my-wallet.handler";
+import { WALLET_REPOSITORY } from "./application/ports/wallet-repository.port";
+import { WALLET_TRANSACTION_REPOSITORY } from "./application/ports/wallet-transaction-repository.port";
+import { WALLET_EVENT_PUBLISHER } from "./application/ports/wallet-event-publisher.port";
 
 @Module({
+  imports: [PassportModule],
   controllers: [WalletsController],
+  providers: [
+    PrismaService,
+    RabbitMQService,
+    GameEventsConsumer,
+    JwtStrategy,
+    { provide: WALLET_REPOSITORY, useClass: WalletRepositoryImpl },
+    { provide: WALLET_TRANSACTION_REPOSITORY, useClass: WalletTransactionRepositoryImpl },
+    { provide: WALLET_EVENT_PUBLISHER, useClass: WalletReplyPublisher },
+    CreateWalletHandler,
+    DebitWalletHandler,
+    CreditWalletHandler,
+    GetMyWalletHandler,
+  ],
 })
 export class AppModule {}
