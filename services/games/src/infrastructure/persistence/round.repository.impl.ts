@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { Round, RoundData } from "../../domain/round/round.entity";
-import { RoundRepository } from "../../domain/round/round.repository";
+import type { RoundRepository } from "../../domain/round/round.repository";
 import { RoundPhase } from "../../domain/round/round-phase.enum";
 import { Bet } from "../../domain/bet/bet.entity";
 import { BetStatus } from "../../domain/bet/bet-status.enum";
@@ -33,7 +33,7 @@ export class RoundRepositoryImpl implements RoundRepository {
       where: { phase: phase as string },
       include: { bets: true },
     });
-    return rows.map((r) => this.toDomain(r));
+    return rows.map((r: any) => this.toDomain(r));
   }
 
   async findHistory(
@@ -50,7 +50,7 @@ export class RoundRepositoryImpl implements RoundRepository {
       }),
       this.prisma.round.count({ where: { phase: "FINISHED" } }),
     ]);
-    return { rounds: rows.map((r) => this.toDomain(r)), total };
+    return { rounds: rows.map((r: any) => this.toDomain(r)), total };
   }
 
   async save(round: Round): Promise<void> {

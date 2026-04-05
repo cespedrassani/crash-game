@@ -11,7 +11,6 @@ export function useBet() {
     mutationFn: (amount: number) => gameService.placeBet(amount),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bets", "me"] });
-      toast.success("Aposta registrada!");
     },
     onError: (err: Error) => {
       toast.error(err.message ?? "Erro ao registrar aposta.");

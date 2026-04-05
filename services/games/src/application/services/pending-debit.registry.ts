@@ -15,11 +15,6 @@ interface PendingEntry {
 
 const TIMEOUT_MS = 5_000;
 
-/**
- * Bridges async RabbitMQ debit replies back to the HTTP request awaiting them.
- * PlaceBetHandler registers a pending entry before publishing; WalletReplyConsumer
- * resolves or rejects it when the reply arrives.
- */
 @Injectable()
 export class PendingDebitRegistry {
   private readonly logger = new Logger(PendingDebitRegistry.name);

@@ -76,12 +76,15 @@ export async function refreshTokens(
 }
 
 export function buildLogoutUrl(idToken: string): string {
+  const redirectUri =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/login`
+      : "http://localhost:3000/login";
+
   const params = new URLSearchParams({
+    client_id: CLIENT_ID,
     id_token_hint: idToken,
-    post_logout_redirect_uri:
-      typeof window !== "undefined"
-        ? `${window.location.origin}/login`
-        : "http://localhost:3000/login",
+    post_logout_redirect_uri: redirectUri,
   });
   return `${BASE}/logout?${params.toString()}`;
 }

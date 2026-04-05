@@ -1,6 +1,6 @@
 import { Injectable, Inject, ConflictException } from "@nestjs/common";
 import { Wallet } from "../../../domain/wallet/wallet.entity";
-import { WalletRepositoryPort, WALLET_REPOSITORY } from "../../ports/wallet-repository.port";
+import { type WalletRepositoryPort, WALLET_REPOSITORY } from "../../ports/wallet-repository.port";
 
 export interface CreateWalletCommand {
   playerId: string;

@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { Round } from "../../domain/round/round.entity";
 import { RoundPhase } from "../../domain/round/round-phase.enum";
 import { BetStatus } from "../../domain/bet/bet-status.enum";
-import { RoundRepository } from "../../domain/round/round.repository";
+import type { RoundRepository } from "../../domain/round/round.repository";
 import { GameGateway } from "../../infrastructure/websocket/game.gateway";
 import { WalletCommandsPublisher } from "../../infrastructure/messaging/wallet-commands.publisher";
 

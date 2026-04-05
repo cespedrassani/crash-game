@@ -9,11 +9,9 @@ export function useCashout() {
 
   return useMutation({
     mutationFn: () => gameService.cashout(),
-    onSuccess: (bet) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wallet", "me"] });
       queryClient.invalidateQueries({ queryKey: ["bets", "me"] });
-      const mult = bet.cashoutMultiplier?.toFixed(2) ?? "?";
-      toast.success(`Cashout realizado a ${mult}x! 🎉`);
     },
     onError: (err: Error) => {
       toast.error(err.message ?? "Erro ao realizar cashout.");

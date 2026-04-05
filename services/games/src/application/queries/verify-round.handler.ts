@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { RoundRepository } from "../../domain/round/round.repository";
+import type { RoundRepository } from "../../domain/round/round.repository";
 import { ProvalyFairService, CrashPointDerivation } from "../../domain/provably-fair/provably-fair.service";
 import { RoundPhase } from "../../domain/round/round-phase.enum";
 

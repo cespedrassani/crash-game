@@ -26,13 +26,13 @@ export default function LoginPage() {
     sessionStorage.setItem("pkce_state", state);
 
     window.location.href = buildAuthUrl(challenge, state);
+    setLoading(false);
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-8 p-10 rounded-xl bg-surface border border-border w-full max-w-sm">
         <div className="flex flex-col items-center gap-2">
-          <div className="text-5xl">🚀</div>
           <h1 className="text-2xl font-bold text-white tracking-tight">
             CrashGame
           </h1>
@@ -46,7 +46,7 @@ export default function LoginPage() {
           disabled={loading}
           className="w-full py-3 px-6 rounded-lg bg-primary hover:bg-primary-hover text-white font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {loading ? "Redirecionando..." : "Entrar com Keycloak"}
+          {loading ? "Redirecionando..." : "Entrar"}
         </button>
 
         <p className="text-xs text-muted text-center">

@@ -22,7 +22,8 @@ export const gameService = {
       `/games/rounds/${roundId}/verify`,
     ),
 
-  placeBet: (amount: number) => apiClient.post<Bet>("/games/bet", { amount }),
+  placeBet: (amountCents: number) =>
+    apiClient.post<Bet>("/games/bet", { amount: amountCents / 100 }),
 
   cashout: () => apiClient.post<Bet>("/games/bet/cashout"),
 

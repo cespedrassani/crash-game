@@ -11,9 +11,14 @@ export function useWallet() {
     queryKey: ["wallet", "me"],
     queryFn: () => walletService.getMyWallet(),
     staleTime: 10_000,
+    refetchInterval: 15_000,
   });
 
-  const balance = wsBalance ?? query.data?.balance ?? null;
+  const httpBalance = query.data?.balanceCents != null
+    ? Number(query.data.balanceCents)
+    : null;
+
+  const balance = wsBalance ?? httpBalance ?? null;
 
   return { ...query, balance };
 }

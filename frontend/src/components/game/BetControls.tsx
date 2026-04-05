@@ -14,8 +14,7 @@ const MAX_BET_CENTS = 100_000;
 
 export function BetControls() {
   const [inputValue, setInputValue] = useState("10,00");
-  const { canBet, canCashout, potentialPayout, multiplier, isBettingPhase } =
-    useGameState();
+  const { canBet, canCashout, potentialPayout, multiplier, isBettingPhase } = useGameState();
   const { balance } = useWallet();
   const bet = useBet();
   const cashout = useCashout();
@@ -70,9 +69,7 @@ export function BetControls() {
         {[500, 1000, 5000].map((v) => (
           <button
             key={v}
-            onClick={() =>
-              setInputValue((v / 100).toFixed(2).replace(".", ","))
-            }
+            onClick={() => setInputValue((v / 100).toFixed(2).replace(".", ","))}
             disabled={!isBettingPhase}
             className="px-2 py-1 rounded text-xs bg-surface border border-border text-foreground-muted hover:border-primary disabled:opacity-40"
           >

@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, HttpException, HttpStatus } from "@nestjs/common";
 import { DebitFailedReason } from "@crash/events";
-import { RoundRepository } from "../../../domain/round/round.repository";
+import type { RoundRepository } from "../../../domain/round/round.repository";
 import { RoundPhase } from "../../../domain/round/round-phase.enum";
 import { Bet } from "../../../domain/bet/bet.entity";
 import { WalletCommandsPublisher } from "../../../infrastructure/messaging/wallet-commands.publisher";

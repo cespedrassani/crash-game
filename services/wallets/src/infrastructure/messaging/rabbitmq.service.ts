@@ -8,8 +8,12 @@ export const ROUTING_KEYS = WalletEventTypes;
 @Injectable()
 export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RabbitMQService.name);
-  private connection!: amqplib.Connection;
+  private connection!: amqplib.ChannelModel;
   private channel!: amqplib.Channel;
+  private readyResolve!: () => void;
+  private readonly ready = new Promise<void>((resolve) => {
+    this.readyResolve = resolve;
+  });
 
   async onModuleInit(): Promise<void> {
     await this.connect();
@@ -25,6 +29,7 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     this.channel = await this.connection.createChannel();
     await this.channel.prefetch(1);
     await this.setupTopology();
+    this.readyResolve();
     this.logger.log("RabbitMQ connected");
   }
 
@@ -62,6 +67,7 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     queue: string,
     handler: (msg: amqplib.ConsumeMessage) => Promise<void>,
   ): Promise<void> {
+    await this.ready;
     await this.channel.consume(queue, async (msg) => {
       if (!msg) return;
       try {

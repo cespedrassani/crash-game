@@ -11,7 +11,7 @@ import {
   CreditFailedReason,
 } from "@crash/events";
 import { RabbitMQService, ROUTING_KEYS } from "./rabbitmq.service";
-import { WalletEventPublisherPort } from "../../application/ports/wallet-event-publisher.port";
+import type { WalletEventPublisherPort } from "../../application/ports/wallet-event-publisher.port";
 
 @Injectable()
 export class WalletReplyPublisher implements WalletEventPublisherPort {

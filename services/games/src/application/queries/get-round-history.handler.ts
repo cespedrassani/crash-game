@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { Round } from "../../domain/round/round.entity";
-import { RoundRepository } from "../../domain/round/round.repository";
+import type { RoundRepository } from "../../domain/round/round.repository";
 
 export interface GetRoundHistoryQuery {
   page: number;

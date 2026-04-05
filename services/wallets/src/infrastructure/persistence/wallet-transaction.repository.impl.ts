@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { WalletTransactionRepositoryPort } from "../../application/ports/wallet-transaction-repository.port";
+import type { WalletTransactionRepositoryPort } from "../../application/ports/wallet-transaction-repository.port";
 import { PrismaService } from "./prisma.service";
 
 @Injectable()

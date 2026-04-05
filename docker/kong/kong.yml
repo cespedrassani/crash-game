@@ -1,5 +1,25 @@
 _format_version: "3.0"
 
+plugins:
+  - name: cors
+    config:
+      origins:
+        - "http://localhost:3000"
+      methods:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        - OPTIONS
+      headers:
+        - Authorization
+        - Content-Type
+      exposed_headers:
+        - Authorization
+      credentials: true
+      max_age: 3600
+
 services:
   - name: games-service
     url: http://games:4001
@@ -8,6 +28,20 @@ services:
         paths:
           - /games
         strip_path: true
+        protocols:
+          - http
+          - https
+
+  - name: games-ws
+    url: http://games:4001
+    routes:
+      - name: games-ws-route
+        paths:
+          - /socket.io
+        strip_path: false
+        protocols:
+          - http
+          - https
 
   - name: wallets-service
     url: http://wallets:4002
@@ -16,3 +50,6 @@ services:
         paths:
           - /wallets
         strip_path: true
+        protocols:
+          - http
+          - https

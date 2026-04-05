@@ -1,12 +1,12 @@
 import { Injectable, Inject, Logger } from "@nestjs/common";
 import { Money } from "../../../domain/value-objects/money.vo";
-import { WalletRepositoryPort, WALLET_REPOSITORY } from "../../ports/wallet-repository.port";
+import { type WalletRepositoryPort, WALLET_REPOSITORY } from "../../ports/wallet-repository.port";
 import {
-  WalletTransactionRepositoryPort,
+  type WalletTransactionRepositoryPort,
   WALLET_TRANSACTION_REPOSITORY,
 } from "../../ports/wallet-transaction-repository.port";
 import {
-  WalletEventPublisherPort,
+  type WalletEventPublisherPort,
   WALLET_EVENT_PUBLISHER,
 } from "../../ports/wallet-event-publisher.port";
 import { CreditFailedReason } from "@crash/events";

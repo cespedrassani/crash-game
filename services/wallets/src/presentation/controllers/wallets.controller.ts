@@ -27,7 +27,7 @@ export class WalletsController {
     return { status: "ok", service: "wallets" };
   }
 
-  @Post("wallets")
+  @Post()
   @UseGuards(JwtGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Create wallet for authenticated player" })
@@ -39,7 +39,7 @@ export class WalletsController {
     return this.toDto(wallet);
   }
 
-  @Get("wallets/me")
+  @Get("me")
   @UseGuards(JwtGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Get authenticated player wallet and balance" })
