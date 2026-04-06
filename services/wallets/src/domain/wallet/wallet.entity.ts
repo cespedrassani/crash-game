@@ -14,36 +14,32 @@ export interface WalletData {
   playerId: string;
   username: string;
   balanceCents: bigint;
-  transactions: WalletTransaction[];
   createdAt: Date;
   updatedAt: Date;
 }
 
 export class Wallet {
   private _balanceCents: bigint;
-  private readonly _transactions: WalletTransaction[];
   private _updatedAt: Date;
-  private readonly _domainEvents: DomainEvent[];
+  private readonly _newTransactions: WalletTransaction[] = [];
+  private readonly _domainEvents: DomainEvent[] = [];
 
   private constructor(
     readonly id: string,
     readonly playerId: string,
     readonly username: string,
     balanceCents: bigint,
-    transactions: WalletTransaction[],
     readonly createdAt: Date,
     updatedAt: Date,
   ) {
     this._balanceCents = balanceCents;
-    this._transactions = transactions;
     this._updatedAt = updatedAt;
-    this._domainEvents = [];
   }
 
   static create(playerId: string, username: string): Wallet {
     const id = randomUUID();
     const now = new Date();
-    const wallet = new Wallet(id, playerId, username, 0n, [], now, now);
+    const wallet = new Wallet(id, playerId, username, 0n, now, now);
     wallet._domainEvents.push(new WalletCreatedEvent(id, playerId, username));
     return wallet;
   }
@@ -54,7 +50,6 @@ export class Wallet {
       data.playerId,
       data.username,
       data.balanceCents,
-      data.transactions,
       data.createdAt,
       data.updatedAt,
     );
@@ -64,12 +59,13 @@ export class Wallet {
     return this._balanceCents;
   }
 
-  get transactions(): readonly WalletTransaction[] {
-    return this._transactions;
-  }
-
   get updatedAt(): Date {
     return this._updatedAt;
+  }
+
+  /** Only transactions created in this session (not yet persisted). */
+  get newTransactions(): readonly WalletTransaction[] {
+    return this._newTransactions;
   }
 
   debit(
@@ -101,7 +97,7 @@ export class Wallet {
       now,
     );
 
-    this._transactions.push(transaction);
+    this._newTransactions.push(transaction);
     this._domainEvents.push(
       new WalletDebitedEvent(
         this.id,
@@ -142,7 +138,7 @@ export class Wallet {
       now,
     );
 
-    this._transactions.push(transaction);
+    this._newTransactions.push(transaction);
     this._domainEvents.push(
       new WalletCreditedEvent(
         this.id,
@@ -155,10 +151,6 @@ export class Wallet {
     );
 
     return transaction;
-  }
-
-  currentBalance(): Money {
-    return Money.of(this._balanceCents);
   }
 
   pullDomainEvents(): DomainEvent[] {

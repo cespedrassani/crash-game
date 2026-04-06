@@ -40,10 +40,10 @@ describe("Wallet", () => {
       wallet.debit(Money.of(3000n), "key-1", "Bet #1", "bet-1");
 
       expect(wallet.balanceCents).toBe(7000n);
-      expect(wallet.transactions).toHaveLength(2);
-      expect(wallet.transactions[1].type).toBe(TransactionType.DEBIT);
-      expect(wallet.transactions[1].amountCents).toBe(3000n);
-      expect(wallet.transactions[1].balanceAfterCents).toBe(7000n);
+      expect(wallet.newTransactions).toHaveLength(2);
+      expect(wallet.newTransactions[1].type).toBe(TransactionType.DEBIT);
+      expect(wallet.newTransactions[1].amountCents).toBe(3000n);
+      expect(wallet.newTransactions[1].balanceAfterCents).toBe(7000n);
     });
 
     it("raises WalletDebitedEvent", () => {
@@ -92,8 +92,8 @@ describe("Wallet", () => {
       wallet.credit(Money.of(5000n), "key-1", "Cashout", "bet-1");
 
       expect(wallet.balanceCents).toBe(5000n);
-      expect(wallet.transactions[0].type).toBe(TransactionType.CREDIT);
-      expect(wallet.transactions[0].balanceAfterCents).toBe(5000n);
+      expect(wallet.newTransactions[0].type).toBe(TransactionType.CREDIT);
+      expect(wallet.newTransactions[0].balanceAfterCents).toBe(5000n);
     });
 
     it("raises WalletCreditedEvent", () => {
@@ -118,7 +118,7 @@ describe("Wallet", () => {
     it("idempotencyKey is persisted on transaction", () => {
       const wallet = Wallet.create("player-1", "testuser");
       wallet.credit(Money.of(5000n), "debit:bet-abc", "Bet", "bet-abc");
-      expect(wallet.transactions[0].idempotencyKey).toBe("debit:bet-abc");
+      expect(wallet.newTransactions[0].idempotencyKey).toBe("debit:bet-abc");
     });
   });
 
