@@ -45,6 +45,70 @@
         }
       ],
       "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+    },
+    {
+      "username": "player2",
+      "email": "player2@crash-game.dev",
+      "firstName": "Test",
+      "lastName": "Player 2",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "player123",
+          "temporary": false
+        }
+      ],
+      "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaab"
+    },
+    {
+      "username": "player3",
+      "email": "player3@crash-game.dev",
+      "firstName": "Test",
+      "lastName": "Player 3",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "player123",
+          "temporary": false
+        }
+      ],
+      "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaac"
+    },
+    {
+      "username": "player4",
+      "email": "player4@crash-game.dev",
+      "firstName": "Test",
+      "lastName": "Player 4",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "player123",
+          "temporary": false
+        }
+      ],
+      "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaad"
+    },
+    {
+      "username": "player5",
+      "email": "player5@crash-game.dev",
+      "firstName": "Test",
+      "lastName": "Player 5",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "player123",
+          "temporary": false
+        }
+      ],
+      "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaae"
     }
   ]
 }
