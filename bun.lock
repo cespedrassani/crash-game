@@ -9,6 +9,22 @@
         "bun-types": "latest",
       },
     },
+    "packages/common": {
+      "name": "@crash/common",
+      "version": "0.0.1",
+      "dependencies": {
+        "@nestjs/common": "^11.1.17",
+        "@nestjs/core": "^11.1.17",
+        "@nestjs/passport": "^11.0.5",
+        "amqplib": "^0.10.5",
+        "jwks-rsa": "^3.1.0",
+        "passport-jwt": "^4.0.1",
+      },
+      "devDependencies": {
+        "@types/amqplib": "^0.10.6",
+        "@types/passport-jwt": "^4.0.1",
+      },
+    },
     "packages/events": {
       "name": "@crash/events",
       "version": "0.0.1",
@@ -17,6 +33,7 @@
       "name": "@crash/games",
       "version": "0.0.1",
       "dependencies": {
+        "@crash/common": "workspace:*",
         "@crash/events": "workspace:*",
         "@nestjs/common": "^11.1.17",
         "@nestjs/core": "^11.1.17",
@@ -31,6 +48,7 @@
         "class-transformer": "^0.5.1",
         "class-validator": "^0.14.1",
         "express": "^5.2.1",
+        "jsonwebtoken": "^9.0.2",
         "jwks-rsa": "^3.1.0",
         "passport": "^0.7.0",
         "passport-jwt": "^4.0.1",
@@ -41,6 +59,7 @@
       "devDependencies": {
         "@types/amqplib": "^0.10.6",
         "@types/express": "^5.0.6",
+        "@types/jsonwebtoken": "^9.0.9",
         "@types/passport-jwt": "^4.0.1",
         "bun-types": "latest",
         "prisma": "^6.6.0",
@@ -51,6 +70,7 @@
       "name": "@crash/wallets",
       "version": "0.0.1",
       "dependencies": {
+        "@crash/common": "workspace:*",
         "@crash/events": "workspace:*",
         "@nestjs/common": "^11.1.17",
         "@nestjs/core": "^11.1.17",
@@ -78,6 +98,8 @@
   },
   "packages": {
     "@borewit/text-codec": ["@borewit/text-codec@0.2.2", "", {}, "sha512-DDaRehssg1aNrH4+2hnj1B7vnUGEjU6OIlyRdkMd0aUdIUvKXrJfXsy8LVtXAy7DRvYVluWbMspsRhz2lcW0mQ=="],
+
+    "@crash/common": ["@crash/common@workspace:packages/common"],
 
     "@crash/events": ["@crash/events@workspace:packages/events"],
 

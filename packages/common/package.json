@@ -1,0 +1,19 @@
+{
+  "name": "@crash/common",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@nestjs/common": "^11.1.17",
+    "@nestjs/core": "^11.1.17",
+    "@nestjs/passport": "^11.0.5",
+    "amqplib": "^0.10.5",
+    "jwks-rsa": "^3.1.0",
+    "passport-jwt": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.6",
+    "@types/passport-jwt": "^4.0.1"
+  }
+}
