@@ -13,9 +13,6 @@ export class WalletResponseDto {
   @ApiProperty({ description: "Balance in cents (integer)" })
   balanceCents!: string;
 
-  @ApiProperty({ description: "Formatted balance string (e.g. 100.00)" })
-  balance!: string;
-
   @ApiProperty()
   createdAt!: string;
 }

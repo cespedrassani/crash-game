@@ -24,14 +24,7 @@ export class WalletReplyPublisher implements WalletEventPublisherPort {
     balanceAfterCents: bigint,
   ): Promise<void> {
     const envelope: EventEnvelope<WalletDebitConfirmedPayload> = {
-      metadata: {
-        eventId: randomUUID(),
-        eventType: WalletEventTypes.DEBIT_CONFIRMED,
-        correlationId: betId,
-        idempotencyKey: `debit:${betId}`,
-        occurredAt: new Date().toISOString(),
-        version: 1,
-      },
+      metadata: this.buildMetadata(WalletEventTypes.DEBIT_CONFIRMED, betId, `debit:${betId}`),
       payload: {
         betId,
         playerId,
@@ -49,20 +42,8 @@ export class WalletReplyPublisher implements WalletEventPublisherPort {
     balanceCents: bigint,
   ): Promise<void> {
     const envelope: EventEnvelope<WalletDebitFailedPayload> = {
-      metadata: {
-        eventId: randomUUID(),
-        eventType: WalletEventTypes.DEBIT_FAILED,
-        correlationId: betId,
-        idempotencyKey: `debit:${betId}`,
-        occurredAt: new Date().toISOString(),
-        version: 1,
-      },
-      payload: {
-        betId,
-        playerId,
-        reason,
-        balanceCents: Number(balanceCents),
-      },
+      metadata: this.buildMetadata(WalletEventTypes.DEBIT_FAILED, betId, `debit:${betId}`),
+      payload: { betId, playerId, reason, balanceCents: Number(balanceCents) },
     };
     await this.rabbitmq.publish(ROUTING_KEYS.DEBIT_FAILED, envelope);
   }
@@ -74,14 +55,7 @@ export class WalletReplyPublisher implements WalletEventPublisherPort {
     balanceAfterCents: bigint,
   ): Promise<void> {
     const envelope: EventEnvelope<WalletCreditConfirmedPayload> = {
-      metadata: {
-        eventId: randomUUID(),
-        eventType: WalletEventTypes.CREDIT_CONFIRMED,
-        correlationId: betId,
-        idempotencyKey: `credit:${betId}`,
-        occurredAt: new Date().toISOString(),
-        version: 1,
-      },
+      metadata: this.buildMetadata(WalletEventTypes.CREDIT_CONFIRMED, betId, `credit:${betId}`),
       payload: {
         betId,
         playerId,
@@ -98,16 +72,20 @@ export class WalletReplyPublisher implements WalletEventPublisherPort {
     reason: CreditFailedReason,
   ): Promise<void> {
     const envelope: EventEnvelope<WalletCreditFailedPayload> = {
-      metadata: {
-        eventId: randomUUID(),
-        eventType: WalletEventTypes.CREDIT_FAILED,
-        correlationId: betId,
-        idempotencyKey: `credit:${betId}`,
-        occurredAt: new Date().toISOString(),
-        version: 1,
-      },
+      metadata: this.buildMetadata(WalletEventTypes.CREDIT_FAILED, betId, `credit:${betId}`),
       payload: { betId, playerId, reason },
     };
     await this.rabbitmq.publish(ROUTING_KEYS.CREDIT_FAILED, envelope);
+  }
+
+  private buildMetadata(eventType: string, correlationId: string, idempotencyKey: string) {
+    return {
+      eventId: randomUUID(),
+      eventType,
+      correlationId,
+      idempotencyKey,
+      occurredAt: new Date().toISOString(),
+      version: 1 as const,
+    };
   }
 }

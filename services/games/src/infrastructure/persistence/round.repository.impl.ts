@@ -21,7 +21,7 @@ export class RoundRepositoryImpl implements RoundRepository {
 
   async findCurrent(): Promise<Round | null> {
     const data = await this.prisma.round.findFirst({
-      where: { phase: { in: ["BETTING", "RUNNING"] } },
+      where: { phase: { in: [RoundPhase.BETTING, RoundPhase.RUNNING] } },
       include: { bets: true },
       orderBy: { createdAt: "desc" },
     });
@@ -30,10 +30,10 @@ export class RoundRepositoryImpl implements RoundRepository {
 
   async findByPhase(phase: RoundPhase): Promise<Round[]> {
     const rows = await this.prisma.round.findMany({
-      where: { phase: phase as string },
+      where: { phase: phase as RoundPhase },
       include: { bets: true },
     });
-    return rows.map((r: any) => this.toDomain(r));
+    return rows.map((r) => this.toDomain(r));
   }
 
   async findHistory(
@@ -42,15 +42,15 @@ export class RoundRepositoryImpl implements RoundRepository {
   ): Promise<{ rounds: Round[]; total: number }> {
     const [rows, total] = await this.prisma.$transaction([
       this.prisma.round.findMany({
-        where: { phase: "FINISHED" },
+        where: { phase: RoundPhase.FINISHED },
         include: { bets: true },
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
       }),
-      this.prisma.round.count({ where: { phase: "FINISHED" } }),
+      this.prisma.round.count({ where: { phase: RoundPhase.FINISHED } }),
     ]);
-    return { rounds: rows.map((r: any) => this.toDomain(r)), total };
+    return { rounds: rows.map((r) => this.toDomain(r)), total };
   }
 
   async save(round: Round): Promise<void> {

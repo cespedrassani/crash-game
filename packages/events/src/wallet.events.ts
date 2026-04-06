@@ -49,13 +49,13 @@ export interface WalletCreditFailedPayload {
   reason: CreditFailedReason;
 }
 
-export const WalletEventTypes = {
-  DEBIT_REQUESTED: "wallet.debit.requested",
-  DEBIT_CONFIRMED: "wallet.debit.confirmed",
-  DEBIT_FAILED: "wallet.debit.failed",
-  CREDIT_REQUESTED: "wallet.credit.requested",
-  CREDIT_CONFIRMED: "wallet.credit.confirmed",
-  CREDIT_FAILED: "wallet.credit.failed",
-} as const;
+export enum WalletEventTypes {
+  DEBIT_REQUESTED = "wallet.debit.requested",
+  DEBIT_CONFIRMED = "wallet.debit.confirmed",
+  DEBIT_FAILED = "wallet.debit.failed",
+  CREDIT_REQUESTED = "wallet.credit.requested",
+  CREDIT_CONFIRMED = "wallet.credit.confirmed",
+  CREDIT_FAILED = "wallet.credit.failed",
+}
 
-export type WalletEventType = (typeof WalletEventTypes)[keyof typeof WalletEventTypes];
+export type WalletEventType = WalletEventTypes;
