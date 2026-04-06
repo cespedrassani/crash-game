@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { ScheduleModule } from "@nestjs/schedule";
 import { PassportModule } from "@nestjs/passport";
 import { WalletsController } from "./presentation/controllers/wallets.controller";
 import { PrismaService } from "./infrastructure/persistence/prisma.service";
@@ -7,6 +8,7 @@ import { WalletTransactionRepositoryImpl } from "./infrastructure/persistence/wa
 import { RabbitMQService } from "./infrastructure/messaging/rabbitmq.service";
 import { WalletReplyPublisher } from "./infrastructure/messaging/wallet-reply.publisher";
 import { GameEventsConsumer } from "./infrastructure/messaging/game-events.consumer";
+import { OutboxRelayService } from "./infrastructure/messaging/outbox-relay.service";
 import { JwtStrategy } from "./infrastructure/auth/jwt.strategy";
 import { CreateWalletHandler } from "./application/commands/create-wallet/create-wallet.handler";
 import { DebitWalletHandler } from "./application/commands/debit-wallet/debit-wallet.handler";
@@ -18,12 +20,13 @@ import { WALLET_TRANSACTION_REPOSITORY } from "./application/ports/wallet-transa
 import { WALLET_EVENT_PUBLISHER } from "./application/ports/wallet-event-publisher.port";
 
 @Module({
-  imports: [PassportModule],
+  imports: [PassportModule, ScheduleModule.forRoot()],
   controllers: [WalletsController],
   providers: [
     PrismaService,
     RabbitMQService,
     GameEventsConsumer,
+    OutboxRelayService,
     JwtStrategy,
     { provide: WALLET_REPOSITORY, useClass: WalletRepositoryImpl },
     { provide: WALLET_TRANSACTION_REPOSITORY, useClass: WalletTransactionRepositoryImpl },

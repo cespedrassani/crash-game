@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { ScheduleModule } from "@nestjs/schedule";
 import { PassportModule } from "@nestjs/passport";
 import { GamesController } from "./presentation/controllers/games.controller";
 import { PrismaService } from "./infrastructure/persistence/prisma.service";
@@ -6,6 +7,7 @@ import { RoundRepositoryImpl } from "./infrastructure/persistence/round.reposito
 import { RabbitMQService } from "./infrastructure/messaging/rabbitmq.service";
 import { WalletCommandsPublisher } from "./infrastructure/messaging/wallet-commands.publisher";
 import { WalletReplyConsumer } from "./infrastructure/messaging/wallet-reply.consumer";
+import { OutboxRelayService } from "./infrastructure/messaging/outbox-relay.service";
 import { GameGateway } from "./infrastructure/websocket/game.gateway";
 import { WsJwtService } from "./infrastructure/auth/ws-jwt.service";
 import { JwtStrategy } from "./infrastructure/auth/jwt.strategy";
@@ -20,13 +22,14 @@ import { GameEngineService } from "./application/services/game-engine.service";
 import { ROUND_REPOSITORY } from "./domain/round/round.repository.token";
 
 @Module({
-  imports: [PassportModule],
+  imports: [PassportModule, ScheduleModule.forRoot()],
   controllers: [GamesController],
   providers: [
     PrismaService,
     RabbitMQService,
     WalletCommandsPublisher,
     WalletReplyConsumer,
+    OutboxRelayService,
     GameGateway,
     WsJwtService,
     PendingDebitRegistry,

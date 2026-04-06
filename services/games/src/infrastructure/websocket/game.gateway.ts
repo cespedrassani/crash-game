@@ -60,6 +60,7 @@ interface RoundSnapshot {
   phase: "betting" | "running" | "crashed";
   seedHash: string;
   multiplier: number;
+  elapsedMs: number;
   bettingEndsAt: string | null;
   crashPoint: number | null;
   serverSeed: string | null;
@@ -102,6 +103,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         roundId: s.roundId,
         phase: s.phase,
         multiplier: s.multiplier,
+        elapsedMs: s.elapsedMs,
         timeLeft,
         seedHash: s.seedHash,
         bets: s.bets,
@@ -120,6 +122,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       phase: "betting",
       seedHash: payload.serverSeedHash,
       multiplier: 1.0,
+      elapsedMs: 0,
       bettingEndsAt: payload.endsAt,
       crashPoint: null,
       serverSeed: null,
@@ -144,8 +147,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const multiplier = payload.multiplierX100 / 100;
     if (this.snapshot) {
       this.snapshot.multiplier = multiplier;
+      this.snapshot.elapsedMs = payload.elapsedMs;
     }
-    this.server.emit("round:tick", { multiplier });
+    this.server.emit("round:tick", { multiplier, elapsedMs: payload.elapsedMs });
   }
 
   emitRoundCrashed(payload: RoundCrashedPayload): void {
@@ -204,9 +208,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
-  emitWalletUpdated(playerId: string, balanceCents: number): void {
+  emitWalletUpdated(playerId: string, balanceCents: string): void {
     this.server.to(`player:${playerId}`).emit("wallet:updated", {
-      balance: balanceCents,
+      balance: Number(balanceCents),
     });
   }
 }

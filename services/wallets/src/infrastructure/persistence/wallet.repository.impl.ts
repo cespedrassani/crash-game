@@ -1,8 +1,9 @@
 import { Injectable } from "@nestjs/common";
+import { randomUUID } from "node:crypto";
+import { Prisma } from "@prisma/client";
 import { Wallet, WalletData } from "../../domain/wallet/wallet.entity";
 import type { WalletRepositoryPort } from "../../application/ports/wallet-repository.port";
-import { WalletTransaction } from "../../domain/transaction/wallet-transaction.entity";
-import { TransactionType } from "../../domain/transaction/transaction-type.enum";
+import { OutboxEntry } from "../../domain/outbox/outbox-entry";
 import { PrismaService } from "./prisma.service";
 
 @Injectable()
@@ -19,7 +20,7 @@ export class WalletRepositoryImpl implements WalletRepositoryPort {
     return data ? this.toDomain(data) : null;
   }
 
-  async save(wallet: Wallet): Promise<void> {
+  async save(wallet: Wallet, outbox: OutboxEntry[] = []): Promise<void> {
     const newTxs = wallet.newTransactions;
 
     await this.prisma.$transaction([
@@ -52,6 +53,17 @@ export class WalletRepositoryImpl implements WalletRepositoryPort {
                 createdAt: t.createdAt,
               })),
               skipDuplicates: true,
+            }),
+          ]
+        : []),
+      ...(outbox.length > 0
+        ? [
+            this.prisma.outboxMessage.createMany({
+              data: outbox.map((m) => ({
+                id: randomUUID(),
+                routingKey: m.routingKey,
+                payload: m.payload as Prisma.InputJsonValue,
+              })),
             }),
           ]
         : []),

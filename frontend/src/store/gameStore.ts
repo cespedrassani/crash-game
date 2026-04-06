@@ -6,6 +6,7 @@ export interface GameState {
   roundId: string | null;
   phase: RoundPhase;
   multiplier: number;
+  elapsedMs: number;
   crashPoint: number | null;
   serverSeed: string | null;
   seedHash: string | null;
@@ -16,7 +17,7 @@ export interface GameState {
 
 interface GameActions {
   setPhase: (phase: RoundPhase) => void;
-  setMultiplier: (multiplier: number) => void;
+  setMultiplier: (multiplier: number, elapsedMs: number) => void;
   setRound: (roundId: string, seedHash: string) => void;
   setTimeLeft: (timeLeft: number) => void;
   setCrashed: (crashPoint: number, serverSeed: string) => void;
@@ -31,6 +32,7 @@ const INITIAL_STATE: GameState = {
   roundId: null,
   phase: "waiting",
   multiplier: 1.0,
+  elapsedMs: 0,
   crashPoint: null,
   serverSeed: null,
   seedHash: null,
@@ -44,10 +46,10 @@ export const useGameStore = create<GameState & GameActions>((set) => ({
 
   setPhase: (phase) => set({ phase }),
 
-  setMultiplier: (multiplier) => set({ multiplier }),
+  setMultiplier: (multiplier, elapsedMs) => set({ multiplier, elapsedMs }),
 
   setRound: (roundId, seedHash) =>
-    set({ roundId, seedHash, crashPoint: null, serverSeed: null, bets: [], multiplier: 1.0 }),
+    set({ roundId, seedHash, crashPoint: null, serverSeed: null, bets: [], multiplier: 1.0, elapsedMs: 0 }),
 
   setTimeLeft: (timeLeft) => set({ timeLeft }),
 

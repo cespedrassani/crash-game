@@ -29,7 +29,7 @@ export class WalletReplyPublisher implements WalletEventPublisherPort {
         betId,
         playerId,
         amountCents: Number(amountCents),
-        balanceAfterCents: Number(balanceAfterCents),
+        balanceAfterCents: balanceAfterCents.toString(),
       },
     };
     await this.rabbitmq.publish(ROUTING_KEYS.DEBIT_CONFIRMED, envelope);
@@ -43,7 +43,7 @@ export class WalletReplyPublisher implements WalletEventPublisherPort {
   ): Promise<void> {
     const envelope: EventEnvelope<WalletDebitFailedPayload> = {
       metadata: this.buildMetadata(WalletEventTypes.DEBIT_FAILED, betId, `debit:${betId}`),
-      payload: { betId, playerId, reason, balanceCents: Number(balanceCents) },
+      payload: { betId, playerId, reason, balanceCents: balanceCents.toString() },
     };
     await this.rabbitmq.publish(ROUTING_KEYS.DEBIT_FAILED, envelope);
   }
@@ -60,7 +60,7 @@ export class WalletReplyPublisher implements WalletEventPublisherPort {
         betId,
         playerId,
         amountCents: Number(amountCents),
-        balanceAfterCents: Number(balanceAfterCents),
+        balanceAfterCents: balanceAfterCents.toString(),
       },
     };
     await this.rabbitmq.publish(ROUTING_KEYS.CREDIT_CONFIRMED, envelope);

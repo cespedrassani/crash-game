@@ -1,7 +1,10 @@
 import { Injectable } from "@nestjs/common";
+import { randomUUID } from "node:crypto";
+import { Prisma } from "@prisma/client";
 import { Round, RoundData } from "../../domain/round/round.entity";
 import type { RoundRepository } from "../../domain/round/round.repository";
 import { RoundPhase } from "../../domain/round/round-phase.enum";
+import { OutboxEntry } from "../../domain/outbox/outbox-entry";
 import { Bet } from "../../domain/bet/bet.entity";
 import { BetStatus } from "../../domain/bet/bet-status.enum";
 import { CrashPoint } from "../../domain/value-objects/crash-point.vo";
@@ -53,7 +56,7 @@ export class RoundRepositoryImpl implements RoundRepository {
     return { rounds: rows.map((r) => this.toDomain(r)), total };
   }
 
-  async save(round: Round): Promise<void> {
+  async save(round: Round, outbox: OutboxEntry[] = []): Promise<void> {
     await this.prisma.$transaction([
       this.prisma.round.upsert({
         where: { id: round.id },
@@ -99,6 +102,17 @@ export class RoundRepositoryImpl implements RoundRepository {
           },
         }),
       ),
+      ...(outbox.length > 0
+        ? [
+            this.prisma.outboxMessage.createMany({
+              data: outbox.map((m) => ({
+                id: randomUUID(),
+                routingKey: m.routingKey,
+                payload: m.payload as Prisma.InputJsonValue,
+              })),
+            }),
+          ]
+        : []),
     ]);
   }
 

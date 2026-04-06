@@ -13,6 +13,7 @@ export interface SocketRoundStartedPayload {
 
 export interface SocketRoundTickPayload {
   multiplier: number;
+  elapsedMs: number;
 }
 
 export interface SocketRoundCrashedPayload {
@@ -42,6 +43,7 @@ export interface SocketRoundStatePayload {
   roundId: string;
   phase: RoundPhase;
   multiplier: number;
+  elapsedMs: number;
   timeLeft: number | null;
   seedHash: string;
   bets: LiveBet[];

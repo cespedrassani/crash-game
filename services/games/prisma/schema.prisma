@@ -55,3 +55,14 @@ enum BetStatus {
   WON
   LOST
 }
+
+model OutboxMessage {
+  id          String    @id @default(uuid())
+  routingKey  String    @map("routing_key")
+  payload     Json
+  processedAt DateTime? @map("processed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([processedAt, createdAt])
+  @@map("outbox_messages")
+}

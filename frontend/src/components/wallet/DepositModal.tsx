@@ -5,9 +5,12 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { walletService } from "@/services/walletService";
+import { formatMoney } from "@/utils/formatMoney";
 import { cn } from "@/utils/cn";
 
 const PRESETS = [1000, 5000, 10000, 50000];
+const MIN_DEPOSIT_CENTS = 100;
+const MAX_DEPOSIT_CENTS = 100_000_00; // R$ 100.000,00
 
 interface DepositModalProps {
   children?: React.ReactNode;
@@ -15,41 +18,51 @@ interface DepositModalProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-export function DepositModal({ children, open: controlledOpen, onOpenChange }: DepositModalProps) {
+export function DepositModal({
+  children,
+  open: controlledOpen,
+  onOpenChange,
+}: DepositModalProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
   const setOpen = isControlled ? (onOpenChange ?? (() => {})) : setInternalOpen;
-  const [inputValue, setInputValue] = useState("100,00");
+  const [amountCents, setAmountCents] = useState(10000); // R$ 100,00
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (amountCents: number) => walletService.deposit(amountCents),
-    onSuccess: (wallet) => {
+    mutationFn: (cents: number) => walletService.deposit(cents),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wallet", "me"] });
       setOpen(false);
-      setInputValue("100,00");
+      setAmountCents(10000);
     },
     onError: (err: Error) => {
       toast.error(err.message ?? "Erro ao realizar depósito.");
     },
   });
 
-  function parseInput(): number {
-    const normalized = inputValue.replace(",", ".");
-    const float = parseFloat(normalized);
-    if (isNaN(float)) return 0;
-    return Math.round(float * 100);
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      handleSubmit();
+      return;
+    }
+    if (e.key === "Backspace") {
+      setAmountCents((prev) => Math.floor(prev / 10));
+      return;
+    }
+    if (!/^\d$/.test(e.key)) return;
+    const next = amountCents * 10 + parseInt(e.key);
+    if (next > MAX_DEPOSIT_CENTS) return;
+    setAmountCents(next);
   }
 
   function handleSubmit() {
-    const cents = parseInput();
-    if (cents < 100) return;
-    mutate(cents);
+    if (amountCents < MIN_DEPOSIT_CENTS || isPending) return;
+    mutate(amountCents);
   }
 
-  const cents = parseInput();
-  const isValid = cents >= 100;
+  const isValid = amountCents >= MIN_DEPOSIT_CENTS;
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -75,12 +88,10 @@ export function DepositModal({ children, open: controlledOpen, onOpenChange }: D
               {PRESETS.map((v) => (
                 <button
                   key={v}
-                  onClick={() =>
-                    setInputValue((v / 100).toFixed(2).replace(".", ","))
-                  }
+                  onClick={() => setAmountCents(v)}
                   className="py-1.5 rounded-lg text-xs font-medium bg-surface border border-border text-foreground-muted hover:border-primary hover:text-foreground transition-colors"
                 >
-                  R$ {v / 100 >= 1000 ? `${v / 10000}k` : (v / 100).toFixed(0)}
+                  R$ {v / 100 >= 1000 ? `${v / 100000}k` : (v / 100).toFixed(0)}
                 </button>
               ))}
             </div>
@@ -89,15 +100,16 @@ export function DepositModal({ children, open: controlledOpen, onOpenChange }: D
               <span className="text-sm text-muted shrink-0">R$</span>
               <input
                 type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="0,00"
-                className="flex-1 bg-transparent text-sm font-mono text-white focus:outline-none"
+                inputMode="none"
+                value={formatMoney(amountCents)}
+                onKeyDown={handleKeyDown}
+                onChange={() => {}}
                 autoFocus
+                className="flex-1 bg-transparent text-sm font-mono text-white focus:outline-none"
               />
             </div>
 
-            {!isValid && inputValue !== "" && (
+            {!isValid && amountCents > 0 && (
               <p className="text-xs text-danger -mt-2">Valor mínimo: R$ 1,00</p>
             )}
 

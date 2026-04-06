@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useGameState } from "@/hooks/useGameState";
 import { useWallet } from "@/hooks/useWallet";
 import { useBet } from "@/hooks/useBet";
@@ -12,15 +12,60 @@ import { cn } from "@/utils/cn";
 const MIN_BET_CENTS = 100;
 const MAX_BET_CENTS = 100_000;
 
+const MIN_AUTO_X100 = 101;
+const MAX_AUTO_X100 = 100_000;
+
+function formatAutoCashout(x100: number): string {
+  const int = Math.floor(x100 / 100);
+  const dec = (x100 % 100).toString().padStart(2, "0");
+  return `${int}.${dec}`;
+}
+
 export function BetControls() {
   const [amountCents, setAmountCents] = useState(1000);
-  const { canBet, canCashout, potentialPayout, multiplier, isBettingPhase } =
-    useGameState();
+  const [autoCashoutEnabled, setAutoCashoutEnabled] = useState(false);
+  const [autoCashoutX100, setAutoCashoutX100] = useState(200); // 2.00x
+  const hasTriggeredRef = useRef(false);
+
+  const {
+    canBet,
+    canCashout,
+    potentialPayout,
+    multiplier,
+    isBettingPhase,
+    isRunning,
+  } = useGameState();
   const { balance, hasNoWallet } = useWallet();
   const bet = useBet();
   const cashout = useCashout();
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+  useEffect(() => {
+    if (isBettingPhase) {
+      hasTriggeredRef.current = false;
+    }
+  }, [isBettingPhase]);
+
+  useEffect(() => {
+    if (!autoCashoutEnabled) return;
+    if (!isRunning || !canCashout) return;
+    if (cashout.isPending || hasTriggeredRef.current) return;
+    if (autoCashoutX100 < MIN_AUTO_X100) return;
+
+    const targetMultiplier = autoCashoutX100 / 100;
+    if (multiplier >= targetMultiplier) {
+      hasTriggeredRef.current = true;
+      cashout.mutate();
+    }
+  }, [
+    multiplier,
+    autoCashoutEnabled,
+    autoCashoutX100,
+    isRunning,
+    canCashout,
+    cashout,
+  ]);
+
+  function handleAmountKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       handleBet();
       return;
@@ -33,6 +78,17 @@ export function BetControls() {
     const next = amountCents * 10 + parseInt(e.key);
     if (next > MAX_BET_CENTS * 100) return;
     setAmountCents(next);
+  }
+
+  function handleAutoKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Backspace") {
+      setAutoCashoutX100((prev) => Math.max(0, Math.floor(prev / 10)));
+      return;
+    }
+    if (!/^\d$/.test(e.key)) return;
+    const next = autoCashoutX100 * 10 + parseInt(e.key);
+    if (next > MAX_AUTO_X100) return;
+    setAutoCashoutX100(next);
   }
 
   function handleBet() {
@@ -51,6 +107,8 @@ export function BetControls() {
     amountCents >= MIN_BET_CENTS &&
     amountCents <= MAX_BET_CENTS &&
     (balance === null || amountCents <= balance);
+
+  const isValidAutoTarget = autoCashoutX100 >= MIN_AUTO_X100;
 
   return (
     <div className="flex flex-col gap-3 p-4 rounded-xl bg-surface-2 border border-border">
@@ -71,7 +129,7 @@ export function BetControls() {
           type="text"
           inputMode="none"
           value={formatMoney(amountCents)}
-          onKeyDown={handleKeyDown}
+          onKeyDown={handleAmountKeyDown}
           onChange={() => {}}
           disabled={!isBettingPhase || bet.isPending}
           className={cn(
@@ -80,7 +138,7 @@ export function BetControls() {
             "disabled:opacity-50 disabled:cursor-not-allowed",
           )}
         />
-        <div className="overflow-auto flex items-center scrollbar-none">
+        <div className="flex items-center gap-1">
           {[500, 1000, 5000].map((v) => (
             <button
               key={v}
@@ -93,6 +151,59 @@ export function BetControls() {
           ))}
         </div>
       </div>
+
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          role="switch"
+          aria-checked={autoCashoutEnabled}
+          onClick={() => setAutoCashoutEnabled((v) => !v)}
+          disabled={!isBettingPhase}
+          className={cn(
+            "inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent",
+            "transition-colors duration-200 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed",
+            autoCashoutEnabled ? "bg-primary" : "bg-surface-3",
+          )}
+        >
+          <span
+            className={cn(
+              "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow",
+              "transition-transform duration-200",
+              autoCashoutEnabled ? "translate-x-4" : "translate-x-0",
+            )}
+          />
+        </button>
+
+        <span className="text-xs text-muted whitespace-nowrap">
+          Auto cashout em
+        </span>
+
+        <div className="flex items-center gap-1 flex-1 min-w-0">
+          <input
+            type="text"
+            inputMode="none"
+            value={formatAutoCashout(autoCashoutX100)}
+            onKeyDown={handleAutoKeyDown}
+            onChange={() => {}}
+            disabled={!autoCashoutEnabled || !isBettingPhase}
+            className={cn(
+              "w-full bg-surface border rounded-lg px-2 py-1.5 text-sm font-mono text-white text-right",
+              "focus:outline-none focus:border-primary",
+              "disabled:opacity-40 disabled:cursor-not-allowed",
+              autoCashoutEnabled && isValidAutoTarget
+                ? "border-primary/60"
+                : "border-border",
+            )}
+          />
+          <span className="text-xs text-muted shrink-0">x</span>
+        </div>
+      </div>
+
+      {autoCashoutEnabled && isValidAutoTarget && isRunning && canCashout && (
+        <p className="text-xs text-center text-primary/80 animate-pulse">
+          Auto cashout ativo em {formatMultiplier(autoCashoutX100 / 100)}
+        </p>
+      )}
 
       {canCashout ? (
         <button

@@ -18,14 +18,14 @@ export interface WalletDebitConfirmedPayload {
   betId: string;
   playerId: string;
   amountCents: number;
-  balanceAfterCents: number;
+  balanceAfterCents: string;
 }
 
 export interface WalletDebitFailedPayload {
   betId: string;
   playerId: string;
   reason: DebitFailedReason;
-  balanceCents: number;
+  balanceCents: string;
 }
 
 export interface WalletCreditRequestedPayload {
@@ -40,7 +40,7 @@ export interface WalletCreditConfirmedPayload {
   betId: string;
   playerId: string;
   amountCents: number;
-  balanceAfterCents: number;
+  balanceAfterCents: string;
 }
 
 export interface WalletCreditFailedPayload {

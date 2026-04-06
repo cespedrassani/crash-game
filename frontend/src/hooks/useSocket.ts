@@ -46,6 +46,7 @@ export function useSocket() {
         roundId: payload.roundId,
         phase: payload.phase,
         multiplier: payload.multiplier,
+        elapsedMs: payload.elapsedMs ?? 0,
         timeLeft: payload.timeLeft,
         seedHash: payload.seedHash,
         bets: payload.bets,
@@ -64,7 +65,7 @@ export function useSocket() {
     });
 
     socket.on("round:tick", (payload: SocketRoundTickPayload) => {
-      setMultiplier(payload.multiplier);
+      setMultiplier(payload.multiplier, payload.elapsedMs);
     });
 
     socket.on("round:crashed", (payload: SocketRoundCrashedPayload) => {

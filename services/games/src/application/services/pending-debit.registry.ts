@@ -3,7 +3,7 @@ import { DebitFailedReason } from "@crash/events";
 
 export interface DebitResult {
   success: boolean;
-  balanceCents: number;
+  balanceCents: string;
   reason?: DebitFailedReason;
 }
 

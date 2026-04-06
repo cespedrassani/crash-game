@@ -1,9 +1,26 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useGameStore } from "@/store/gameStore";
 import { useGameState } from "@/hooks/useGameState";
 import { formatMultiplier } from "@/utils/formatMultiplier";
 import { cn } from "@/utils/cn";
+
+const GROWTH_RATE = 0.00006;
+function reconstructCurve(elapsedMs: number): { x: number; y: number }[] {
+  if (elapsedMs <= 0) return [{ x: 0, y: 1 }];
+  const points: { x: number; y: number }[] = [];
+  const step = Math.max(100, Math.floor(elapsedMs / 200));
+  for (let t = 0; t <= elapsedMs; t += step) {
+    const m = Math.floor(100 * Math.pow(Math.E, GROWTH_RATE * t)) / 100;
+    points.push({ x: t / 1000, y: m });
+  }
+
+  const lastM =
+    Math.floor(100 * Math.pow(Math.E, GROWTH_RATE * elapsedMs)) / 100;
+  points.push({ x: elapsedMs / 1000, y: lastM });
+  return points;
+}
 
 export function CrashGraph() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -11,6 +28,7 @@ export function CrashGraph() {
   const startTimeRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
 
+  const elapsedMsStore = useGameStore((s) => s.elapsedMs);
   const { phase, multiplier, crashPoint } = useGameState();
 
   useEffect(() => {
@@ -20,6 +38,17 @@ export function CrashGraph() {
       drawFrame(canvasRef.current, [], phase, crashPoint ?? null);
     }
   }, [phase, crashPoint]);
+
+  useEffect(() => {
+    if (
+      phase === "running" &&
+      pointsRef.current.length === 0 &&
+      elapsedMsStore > 0
+    ) {
+      pointsRef.current = reconstructCurve(elapsedMsStore);
+      startTimeRef.current = Date.now() - elapsedMsStore;
+    }
+  }, [phase, elapsedMsStore]);
 
   useEffect(() => {
     if (phase !== "running" && phase !== "crashed") return;
