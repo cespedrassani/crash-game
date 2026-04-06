@@ -6,6 +6,7 @@ import {
   OnGatewayDisconnect,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
+import { WsJwtService } from "../auth/ws-jwt.service";
 
 export interface BettingPhasePayload {
   roundId: string;
@@ -54,7 +55,6 @@ interface SnapshotBet {
   payout?: number;
 }
 
-
 interface RoundSnapshot {
   roundId: string;
   phase: "betting" | "running" | "crashed";
@@ -66,8 +66,10 @@ interface RoundSnapshot {
   bets: SnapshotBet[];
 }
 
+const CORS_ORIGIN = process.env.CORS_ORIGIN ?? "http://localhost:3000";
+
 @Injectable()
-@WebSocketGateway({ cors: { origin: "*" }, namespace: "/" })
+@WebSocketGateway({ cors: { origin: CORS_ORIGIN }, namespace: "/" })
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   private server!: Server;
@@ -75,23 +77,18 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(GameGateway.name);
   private snapshot: RoundSnapshot | null = null;
 
-  handleConnection(client: Socket): void {
+  constructor(private readonly wsJwt: WsJwtService) {}
+
+  async handleConnection(client: Socket): Promise<void> {
     this.logger.debug(`Client connected: ${client.id}`);
 
     const token = client.handshake.auth?.token as string | undefined;
     if (token) {
-      try {
-        const parts = token.split(".");
-        if (parts.length === 3) {
-          const payload = JSON.parse(
-            Buffer.from(parts[1], "base64url").toString("utf-8"),
-          ) as { sub?: string };
-          if (payload.sub) {
-            void client.join(`player:${payload.sub}`);
-          }
-        }
-      } catch {
-        this.logger.warn(`Failed to decode JWT for client ${client.id}`);
+      const payload = await this.wsJwt.verify(token);
+      if (payload) {
+        void client.join(`player:${payload.sub}`);
+      } else {
+        this.logger.warn(`Invalid WS token from client ${client.id}`);
       }
     }
 
