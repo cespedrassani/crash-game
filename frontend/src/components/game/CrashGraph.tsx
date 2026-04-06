@@ -40,11 +40,22 @@ export function CrashGraph() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ro = new ResizeObserver(() => {
-      drawFrame(canvas, pointsRef.current, phase, crashPoint ?? null);
-    });
+
+    const redraw = () => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          drawFrame(canvas, pointsRef.current, phase, crashPoint ?? null);
+        });
+      });
+    };
+
+    const ro = new ResizeObserver(redraw);
     ro.observe(canvas.parentElement ?? canvas);
-    return () => ro.disconnect();
+    window.addEventListener("resize", redraw);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", redraw);
+    };
   }, [phase, crashPoint]);
 
   return (
@@ -118,17 +129,19 @@ function drawFrame(
   if (!ctx) return;
 
   const dpr = window.devicePixelRatio || 1;
-  const W = canvas.offsetWidth;
-  const H = canvas.offsetHeight;
+  const rect = canvas.getBoundingClientRect();
+  const W = rect.width;
+  const H = rect.height;
   if (W === 0 || H === 0) return;
 
-  canvas.width = W * dpr;
-  canvas.height = H * dpr;
-  ctx.scale(dpr, dpr);
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  const PAD = W < 480
-    ? { top: 12, right: 12, bottom: 24, left: 8 }
-    : { top: 16, right: 16, bottom: 36, left: 52 };
+  const PAD =
+    W < 480
+      ? { top: 12, right: 12, bottom: 24, left: 8 }
+      : { top: 16, right: 16, bottom: 36, left: 52 };
   const showYLabels = W >= 480;
   const plotW = W - PAD.left - PAD.right;
   const plotH = H - PAD.top - PAD.bottom;

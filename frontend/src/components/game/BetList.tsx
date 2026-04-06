@@ -18,7 +18,7 @@ export function BetList() {
   }
 
   return (
-    <div className="flex flex-col gap-1 overflow-y-auto max-h-64">
+    <div className="flex flex-col gap-1">
       {bets.map((bet) => (
         <BetListItem key={bet.playerId} bet={bet} />
       ))}

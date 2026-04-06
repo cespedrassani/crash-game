@@ -72,7 +72,7 @@ export const useGameStore = create<GameState & GameActions>((set) => ({
 
   setWalletBalance: (balance) => set({ walletBalance: balance }),
 
-  syncFromRest: (state) => set((s) => ({ ...s, ...state })),
+  syncFromRest: (state) => set(state),
 
   reset: () => set(INITIAL_STATE),
 }));

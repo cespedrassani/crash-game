@@ -72,6 +72,7 @@ export function useSocket() {
       queryClient.invalidateQueries({ queryKey: ["rounds", "history"] });
       queryClient.invalidateQueries({ queryKey: ["rounds", "current"] });
       queryClient.invalidateQueries({ queryKey: ["bets", "me"] });
+      queryClient.invalidateQueries({ queryKey: ["wallet", "me"] });
     });
 
     socket.on("round:bet", (payload: SocketBetPlacedPayload) => {

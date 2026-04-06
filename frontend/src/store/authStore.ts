@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { AuthUser } from "@/types/player";
-import { clearTokens, getTokens, setTokens } from "@/lib/auth/token";
+import { clearTokens, getTokens, setTokens, isTokenExpiringSoon } from "@/lib/auth/token";
 import { extractUser } from "@/lib/auth/decode";
 import { buildLogoutUrl, refreshTokens } from "@/lib/auth/keycloak";
 
@@ -69,7 +69,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const { accessToken, expiresAt } = get();
     if (!accessToken) return null;
 
-    const needsRefresh = expiresAt ? Date.now() >= expiresAt - 60_000 : true;
+    const needsRefresh = expiresAt ? isTokenExpiringSoon(expiresAt) : true;
     if (!needsRefresh) return accessToken;
 
     const stored = getTokens();

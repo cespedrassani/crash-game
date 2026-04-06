@@ -13,31 +13,38 @@ const MIN_BET_CENTS = 100;
 const MAX_BET_CENTS = 100_000;
 
 export function BetControls() {
-  const [inputValue, setInputValue] = useState("10,00");
-  const { canBet, canCashout, potentialPayout, multiplier, isBettingPhase } = useGameState();
+  const [amountCents, setAmountCents] = useState(1000);
+  const { canBet, canCashout, potentialPayout, multiplier, isBettingPhase } =
+    useGameState();
   const { balance } = useWallet();
   const bet = useBet();
   const cashout = useCashout();
 
-  function parseInput(): number {
-    const normalized = inputValue.replace(",", ".");
-    const float = parseFloat(normalized);
-    if (isNaN(float)) return 0;
-    return Math.round(float * 100);
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      handleBet();
+      return;
+    }
+    if (e.key === "Backspace") {
+      setAmountCents((prev) => Math.floor(prev / 10));
+      return;
+    }
+    if (!/^\d$/.test(e.key)) return;
+    const next = amountCents * 10 + parseInt(e.key);
+    if (next > MAX_BET_CENTS * 100) return;
+    setAmountCents(next);
   }
 
   function handleBet() {
-    const cents = parseInput();
-    if (cents < MIN_BET_CENTS || cents > MAX_BET_CENTS) return;
-    if (balance !== null && cents > balance) return;
-    bet.mutate(cents);
+    if (amountCents < MIN_BET_CENTS || amountCents > MAX_BET_CENTS) return;
+    if (balance !== null && amountCents > balance) return;
+    bet.mutate(amountCents);
   }
 
-  const cents = parseInput();
   const isValidAmount =
-    cents >= MIN_BET_CENTS &&
-    cents <= MAX_BET_CENTS &&
-    (balance === null || cents <= balance);
+    amountCents >= MIN_BET_CENTS &&
+    amountCents <= MAX_BET_CENTS &&
+    (balance === null || amountCents <= balance);
 
   return (
     <div className="flex flex-col gap-3 p-4 rounded-xl bg-surface-2 border border-border">
@@ -56,26 +63,29 @@ export function BetControls() {
         <span className="text-sm text-muted">R$</span>
         <input
           type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
+          inputMode="none"
+          value={formatMoney(amountCents)}
+          onKeyDown={handleKeyDown}
+          onChange={() => {}}
           disabled={!isBettingPhase || bet.isPending}
-          placeholder="10,00"
           className={cn(
             "flex-1 bg-surface border border-border rounded-lg px-3 py-2 text-sm font-mono text-white",
             "focus:outline-none focus:border-primary",
             "disabled:opacity-50 disabled:cursor-not-allowed",
           )}
         />
-        {[500, 1000, 5000].map((v) => (
-          <button
-            key={v}
-            onClick={() => setInputValue((v / 100).toFixed(2).replace(".", ","))}
-            disabled={!isBettingPhase}
-            className="px-2 py-1 rounded text-xs bg-surface border border-border text-foreground-muted hover:border-primary disabled:opacity-40"
-          >
-            {v / 100}
-          </button>
-        ))}
+        <div className="overflow-auto flex items-center scrollbar-none">
+          {[500, 1000, 5000].map((v) => (
+            <button
+              key={v}
+              onClick={() => setAmountCents(v)}
+              disabled={!isBettingPhase}
+              className="px-2 py-1 rounded text-xs bg-surface border border-border text-foreground-muted hover:border-primary disabled:opacity-40"
+            >
+              {v / 100}
+            </button>
+          ))}
+        </div>
       </div>
 
       {canCashout ? (
