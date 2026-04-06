@@ -10,11 +10,16 @@ import { cn } from "@/utils/cn";
 const PRESETS = [1000, 5000, 10000, 50000];
 
 interface DepositModalProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function DepositModal({ children }: DepositModalProps) {
-  const [open, setOpen] = useState(false);
+export function DepositModal({ children, open: controlledOpen, onOpenChange }: DepositModalProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? (onOpenChange ?? (() => {})) : setInternalOpen;
   const [inputValue, setInputValue] = useState("100,00");
   const queryClient = useQueryClient();
 
@@ -48,8 +53,7 @@ export function DepositModal({ children }: DepositModalProps) {
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger asChild>{children}</Dialog.Trigger>
-
+      {children && <Dialog.Trigger asChild>{children}</Dialog.Trigger>}
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/60 z-40 animate-in fade-in-0" />
         <Dialog.Content

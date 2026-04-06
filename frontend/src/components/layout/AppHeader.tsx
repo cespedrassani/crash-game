@@ -4,14 +4,15 @@ import { useAuthStore } from "@/store/authStore";
 import { useWallet } from "@/hooks/useWallet";
 import { PhaseBadge } from "@/components/game/PhaseBadge";
 import { WalletBalance } from "@/components/wallet/WalletBalance";
+import { WalletCreatePrompt } from "@/components/wallet/WalletCreatePrompt";
 import { DepositModal } from "@/components/wallet/DepositModal";
 
 export function AppHeader() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
-  const { error: walletError, isLoading: walletLoading } = useWallet();
+  const { isLoading: walletLoading, hasNoWallet } = useWallet();
 
-  const hasWallet = !walletLoading && !walletError;
+  const hasWallet = !walletLoading && !hasNoWallet;
   const initial = user?.username?.[0]?.toUpperCase() ?? "?";
 
   return (
@@ -51,6 +52,7 @@ export function AppHeader() {
             </button>
           </DepositModal>
         )}
+        {hasNoWallet && <WalletCreatePrompt variant="icon" />}
         <PlayerAvatar initial={initial} />
         <LogoutButton onLogout={logout} />
       </div>

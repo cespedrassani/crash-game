@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type { AuthUser } from "@/types/player";
 import { clearTokens, getTokens, setTokens, isTokenExpiringSoon } from "@/lib/auth/token";
 import { extractUser } from "@/lib/auth/decode";
-import { buildLogoutUrl, refreshTokens } from "@/lib/auth/keycloak";
+import { refreshTokens, revokeSession } from "@/lib/auth/keycloak";
 
 interface AuthState {
   user: AuthUser | null;
@@ -36,7 +36,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout() {
-    const { idToken } = get();
+    const stored = getTokens();
     clearTokens();
     set({
       user: null,
@@ -45,11 +45,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       expiresAt: null,
       isAuthenticated: false,
     });
-    if (idToken) {
-      window.location.href = buildLogoutUrl(idToken);
-    } else {
-      window.location.href = "/login";
+    // Revoke Keycloak session in background — no redirect through Keycloak UI,
+    // which avoids the "internal error" card when the session is already expired.
+    if (stored?.refreshToken) {
+      revokeSession(stored.refreshToken).catch(() => {});
     }
+    window.location.href = "/login";
   },
 
   hydrate() {

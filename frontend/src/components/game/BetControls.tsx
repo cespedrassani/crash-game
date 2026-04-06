@@ -16,7 +16,7 @@ export function BetControls() {
   const [amountCents, setAmountCents] = useState(1000);
   const { canBet, canCashout, potentialPayout, multiplier, isBettingPhase } =
     useGameState();
-  const { balance } = useWallet();
+  const { balance, hasNoWallet } = useWallet();
   const bet = useBet();
   const cashout = useCashout();
 
@@ -36,12 +36,18 @@ export function BetControls() {
   }
 
   function handleBet() {
-    if (amountCents < MIN_BET_CENTS || amountCents > MAX_BET_CENTS) return;
+    if (
+      hasNoWallet ||
+      amountCents < MIN_BET_CENTS ||
+      amountCents > MAX_BET_CENTS
+    )
+      return;
     if (balance !== null && amountCents > balance) return;
     bet.mutate(amountCents);
   }
 
   const isValidAmount =
+    !hasNoWallet &&
     amountCents >= MIN_BET_CENTS &&
     amountCents <= MAX_BET_CENTS &&
     (balance === null || amountCents <= balance);
@@ -111,9 +117,11 @@ export function BetControls() {
         >
           {bet.isPending
             ? "Registrando..."
-            : !isBettingPhase
-              ? "Aguardando fase de apostas"
-              : "Apostar"}
+            : hasNoWallet
+              ? "Configurando carteira..."
+              : !isBettingPhase
+                ? "Aguardando fase de apostas"
+                : "Apostar"}
         </button>
       )}
     </div>

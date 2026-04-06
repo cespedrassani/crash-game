@@ -75,16 +75,19 @@ export async function refreshTokens(
   return res.json() as Promise<TokenResponse>;
 }
 
-export function buildLogoutUrl(idToken: string): string {
-  const redirectUri =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/login`
-      : "http://localhost:3000/login";
-
-  const params = new URLSearchParams({
+/**
+ * Revokes the Keycloak session by invalidating the refresh token server-side.
+ * Preferred over the redirect-based logout URL — avoids the Keycloak error card
+ * when the session is already expired or the id_token_hint is stale.
+ */
+export async function revokeSession(refreshToken: string): Promise<void> {
+  const body = new URLSearchParams({
     client_id: CLIENT_ID,
-    id_token_hint: idToken,
-    post_logout_redirect_uri: redirectUri,
+    refresh_token: refreshToken,
   });
-  return `${BASE}/logout?${params.toString()}`;
+  await fetch(`${BASE}/logout`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body.toString(),
+  });
 }

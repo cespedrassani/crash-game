@@ -1,10 +1,13 @@
 import { useAuthStore } from "@/store/authStore";
+import { getTokens } from "@/lib/auth/token";
+import { refreshTokens } from "@/lib/auth/keycloak";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
 async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
+  isRetry = false,
 ): Promise<T> {
   const token = await useAuthStore.getState().ensureFreshToken();
 
@@ -17,13 +20,43 @@ async function apiFetch<T>(
   const res = await fetch(`${API_URL}${path}`, { ...options, headers });
 
   if (!res.ok) {
-    let message = `HTTP ${res.status}`;
+    let body: { message?: string; code?: number } = {};
     try {
-      const body = (await res.json()) as { message?: string };
-      message = body.message ?? message;
-    } catch {
+      body = (await res.json()) as { message?: string; code?: number };
+    } catch {}
+
+    const isAuthError = res.status === 401;
+
+    if (isAuthError && !isRetry) {
+      const stored = getTokens();
+      if (stored?.refreshToken) {
+        try {
+          const tokens = await refreshTokens(stored.refreshToken);
+          useAuthStore
+            .getState()
+            .setSession(
+              tokens.access_token,
+              tokens.refresh_token,
+              tokens.id_token,
+              tokens.expires_in,
+            );
+          return apiFetch<T>(path, options, true);
+        } catch {
+          useAuthStore.getState().logout();
+          throw Object.assign(
+            new Error("Sessão expirada. Faça login novamente."),
+            { status: 401 },
+          );
+        }
+      }
+      useAuthStore.getState().logout();
+      throw Object.assign(new Error("Sessão expirada. Faça login novamente."), {
+        status: 401,
+      });
     }
-    throw new Error(message);
+
+    const message = body.message ?? `HTTP ${res.status}`;
+    throw Object.assign(new Error(message), { status: res.status });
   }
 
   if (res.status === 204) return undefined as T;
