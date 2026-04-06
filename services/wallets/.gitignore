@@ -17,3 +17,6 @@ bun.lockb
 
 # Logs
 *.log
+
+# Prisma generated client
+node_modules/@crash/prisma-wallets
