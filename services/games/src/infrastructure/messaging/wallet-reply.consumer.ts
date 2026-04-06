@@ -38,6 +38,7 @@ export class WalletReplyConsumer implements OnModuleInit {
             success: true,
             balanceCents: payload.balanceAfterCents,
           });
+          this.gateway.emitWalletUpdated(payload.playerId, payload.balanceAfterCents);
           break;
         }
         case WalletEventTypes.DEBIT_FAILED: {

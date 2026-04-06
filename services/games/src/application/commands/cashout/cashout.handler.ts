@@ -1,5 +1,6 @@
-import { Injectable, BadRequestException } from "@nestjs/common";
+import { Injectable, BadRequestException, Inject } from "@nestjs/common";
 import type { RoundRepository } from "../../../domain/round/round.repository";
+import { ROUND_REPOSITORY } from "../../../domain/round/round.repository.token";
 import { RoundPhase } from "../../../domain/round/round-phase.enum";
 import { Bet } from "../../../domain/bet/bet.entity";
 import { WalletCommandsPublisher } from "../../../infrastructure/messaging/wallet-commands.publisher";
@@ -16,7 +17,7 @@ export interface CashoutCommand {
 @Injectable()
 export class CashoutHandler {
   constructor(
-    private readonly roundRepository: RoundRepository,
+    @Inject(ROUND_REPOSITORY) private readonly roundRepository: RoundRepository,
     private readonly publisher: WalletCommandsPublisher,
     private readonly gateway: GameGateway,
     private readonly gameEngine: GameEngineService,

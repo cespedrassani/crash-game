@@ -1,7 +1,7 @@
-import { Injectable, BadRequestException, HttpException, HttpStatus } from "@nestjs/common";
+import { Injectable, BadRequestException, HttpException, HttpStatus, Inject } from "@nestjs/common";
 import { DebitFailedReason } from "@crash/events";
 import type { RoundRepository } from "../../../domain/round/round.repository";
-import { RoundPhase } from "../../../domain/round/round-phase.enum";
+import { ROUND_REPOSITORY } from "../../../domain/round/round.repository.token";
 import { Bet } from "../../../domain/bet/bet.entity";
 import { WalletCommandsPublisher } from "../../../infrastructure/messaging/wallet-commands.publisher";
 import { GameGateway } from "../../../infrastructure/websocket/game.gateway";
@@ -19,7 +19,7 @@ export interface PlaceBetCommand {
 @Injectable()
 export class PlaceBetHandler {
   constructor(
-    private readonly roundRepository: RoundRepository,
+    @Inject(ROUND_REPOSITORY) private readonly roundRepository: RoundRepository,
     private readonly publisher: WalletCommandsPublisher,
     private readonly gateway: GameGateway,
     private readonly pendingDebits: PendingDebitRegistry,
@@ -27,7 +27,7 @@ export class PlaceBetHandler {
 
   async execute(command: PlaceBetCommand): Promise<Bet> {
     const round = await this.roundRepository.findCurrent();
-    if (!round || round.phase !== RoundPhase.BETTING) {
+    if (!round) {
       throw new BadRequestException("No active betting phase");
     }
 

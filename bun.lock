@@ -29,6 +29,14 @@
       "name": "@crash/events",
       "version": "0.0.1",
     },
+    "packages/prisma-games": {
+      "name": "@crash/prisma-games",
+      "version": "0.0.1",
+    },
+    "packages/prisma-wallets": {
+      "name": "@crash/prisma-wallets",
+      "version": "0.0.1",
+    },
     "services/games": {
       "name": "@crash/games",
       "version": "0.0.1",
@@ -104,6 +112,10 @@
     "@crash/events": ["@crash/events@workspace:packages/events"],
 
     "@crash/games": ["@crash/games@workspace:services/games"],
+
+    "@crash/prisma-games": ["@crash/prisma-games@workspace:packages/prisma-games"],
+
+    "@crash/prisma-wallets": ["@crash/prisma-wallets@workspace:packages/prisma-wallets"],
 
     "@crash/wallets": ["@crash/wallets@workspace:services/wallets"],
 

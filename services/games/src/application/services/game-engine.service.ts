@@ -1,16 +1,17 @@
-import { Injectable, Logger, OnApplicationBootstrap } from "@nestjs/common";
-import { randomBytes } from "node:crypto";
-import { randomUUID } from "node:crypto";
+import { Injectable, Logger, OnApplicationBootstrap, Inject } from "@nestjs/common";
+import { randomBytes, randomUUID } from "node:crypto";
 import { Round } from "../../domain/round/round.entity";
 import { RoundPhase } from "../../domain/round/round-phase.enum";
 import { BetStatus } from "../../domain/bet/bet-status.enum";
 import type { RoundRepository } from "../../domain/round/round.repository";
+import { ROUND_REPOSITORY } from "../../domain/round/round.repository.token";
 import { GameGateway } from "../../infrastructure/websocket/game.gateway";
 import { WalletCommandsPublisher } from "../../infrastructure/messaging/wallet-commands.publisher";
 
 const BETTING_DURATION_MS = parseInt(process.env.BETTING_PHASE_DURATION_MS ?? "10000");
 const TICK_INTERVAL_MS = 100;
 const INTER_ROUND_DELAY_MS = parseInt(process.env.INTER_ROUND_DELAY_MS ?? "3000");
+const MULTIPLIER_GROWTH_RATE = 0.00006;
 
 @Injectable()
 export class GameEngineService implements OnApplicationBootstrap {
@@ -20,7 +21,7 @@ export class GameEngineService implements OnApplicationBootstrap {
   private roundStartTime?: number;
 
   constructor(
-    private readonly roundRepository: RoundRepository,
+    @Inject(ROUND_REPOSITORY) private readonly roundRepository: RoundRepository,
     private readonly gateway: GameGateway,
     private readonly publisher: WalletCommandsPublisher,
   ) {}
@@ -101,7 +102,7 @@ export class GameEngineService implements OnApplicationBootstrap {
 
   private async tick(roundId: string, crashPointX100: number): Promise<void> {
     const elapsedMs = Date.now() - this.roundStartTime!;
-    this.currentMultiplierX100 = Math.floor(100 * Math.pow(Math.E, 0.00006 * elapsedMs));
+    this.currentMultiplierX100 = Math.floor(100 * Math.pow(Math.E, MULTIPLIER_GROWTH_RATE * elapsedMs));
 
     this.gateway.emitTick({
       multiplierX100: this.currentMultiplierX100,
@@ -128,9 +129,7 @@ export class GameEngineService implements OnApplicationBootstrap {
       serverSeed: round.serverSeed,
     });
 
-    this.logger.log(
-      `Round ${round.id} crashed at ${round.crashPoint.toDisplay()}`,
-    );
+    this.logger.log(`Round ${round.id} crashed at ${round.crashPoint.toDisplay()}`);
 
     await this.publishCashoutCredits(round);
 
