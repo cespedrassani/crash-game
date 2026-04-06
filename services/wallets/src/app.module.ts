@@ -11,6 +11,7 @@ import { JwtStrategy } from "./infrastructure/auth/jwt.strategy";
 import { CreateWalletHandler } from "./application/commands/create-wallet/create-wallet.handler";
 import { DebitWalletHandler } from "./application/commands/debit-wallet/debit-wallet.handler";
 import { CreditWalletHandler } from "./application/commands/credit-wallet/credit-wallet.handler";
+import { DepositWalletHandler } from "./application/commands/deposit-wallet/deposit-wallet.handler";
 import { GetMyWalletHandler } from "./application/queries/get-my-wallet.handler";
 import { WALLET_REPOSITORY } from "./application/ports/wallet-repository.port";
 import { WALLET_TRANSACTION_REPOSITORY } from "./application/ports/wallet-transaction-repository.port";
@@ -30,6 +31,7 @@ import { WALLET_EVENT_PUBLISHER } from "./application/ports/wallet-event-publish
     CreateWalletHandler,
     DebitWalletHandler,
     CreditWalletHandler,
+    DepositWalletHandler,
     GetMyWalletHandler,
   ],
 })
