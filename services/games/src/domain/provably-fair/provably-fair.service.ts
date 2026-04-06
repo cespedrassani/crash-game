@@ -9,19 +9,20 @@ export interface CrashPointDerivation {
   crashPointX100: number;
 }
 
-export class ProvalyFairService {
+const MAX_UINT32 = 2 ** 32;
+
+export class ProvablyFairService {
   static hashSeed(seed: string): string {
     return createHash("sha256").update(seed).digest("hex");
   }
 
   static calculateCrashPoint(serverSeed: string, clientSeed: string): CrashPoint {
-    return CrashPoint.of(ProvalyFairService.deriveDetails(serverSeed, clientSeed).crashPointX100);
+    return CrashPoint.of(ProvablyFairService.deriveDetails(serverSeed, clientSeed).crashPointX100);
   }
 
   static deriveDetails(serverSeed: string, clientSeed: string): CrashPointDerivation {
     const hmac = createHmac("sha256", serverSeed).update(clientSeed).digest("hex");
     const h = parseInt(hmac.slice(0, 8), 16);
-    const e = 4294967296;
 
     if (h % 33 === 0) {
       return {
@@ -33,12 +34,12 @@ export class ProvalyFairService {
       };
     }
 
-    const crashPointX100 = Math.max(100, Math.floor((100 * e) / (e - h)));
+    const crashPointX100 = Math.max(100, Math.floor((100 * MAX_UINT32) / (MAX_UINT32 - h)));
     return {
       hmac,
       h,
       instantCrash: false,
-      formula: `floor(100 * ${e} / (${e} - ${h}))`,
+      formula: `floor(100 * ${MAX_UINT32} / (${MAX_UINT32} - ${h}))`,
       crashPointX100,
     };
   }
@@ -48,7 +49,7 @@ export class ProvalyFairService {
     clientSeed: string,
     claimedCrashPointX100: number,
   ): boolean {
-    const { crashPointX100 } = ProvalyFairService.deriveDetails(serverSeed, clientSeed);
+    const { crashPointX100 } = ProvablyFairService.deriveDetails(serverSeed, clientSeed);
     return crashPointX100 === claimedCrashPointX100;
   }
 }

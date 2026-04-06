@@ -15,7 +15,7 @@ import { PlayerAlreadyBetError } from "../errors/player-already-bet.error";
 import { PlayerAlreadyCashedOutError } from "../errors/player-already-cashed-out.error";
 import { RoundNotInBettingPhaseError } from "../errors/round-not-in-betting-phase.error";
 import { RoundNotRunningError } from "../errors/round-not-running.error";
-import { ProvalyFairService } from "../provably-fair/provably-fair.service";
+import { ProvablyFairService } from "../provably-fair/provably-fair.service";
 import { RoundPhase } from "./round-phase.enum";
 
 const MIN_BET_CENTS = 100n;
@@ -66,8 +66,8 @@ export class Round {
 
   static create(serverSeed: string, clientSeed: string): Round {
     const id = randomUUID();
-    const serverSeedHash = ProvalyFairService.hashSeed(serverSeed);
-    const crashPoint = ProvalyFairService.calculateCrashPoint(serverSeed, clientSeed);
+    const serverSeedHash = ProvablyFairService.hashSeed(serverSeed);
+    const crashPoint = ProvablyFairService.calculateCrashPoint(serverSeed, clientSeed);
     return new Round(id, serverSeed, serverSeedHash, clientSeed, crashPoint, new Date(), RoundPhase.BETTING, []);
   }
 
@@ -198,10 +198,6 @@ export class Round {
 
   hasPlayerBet(playerId: string): boolean {
     return this._bets.some((b) => b.playerId === playerId);
-  }
-
-  pendingBets(): Bet[] {
-    return this._bets.filter((b) => b.status === BetStatus.PENDING);
   }
 
   pullDomainEvents(): DomainEvent[] {
